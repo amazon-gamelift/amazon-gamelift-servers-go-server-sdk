@@ -1,0 +1,2 @@
+- Initial release of Amazon GameLift Go Server SDK
+
