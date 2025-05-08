@@ -1,0 +1,6 @@
+- Improved the reliability of the SDK. In the event of an error from the network server, the SDK now automatically re-establishes the websocket connection to Amazon GameLift.
+- Improved websocket reconnections to better maintain the existing connection when establishing the next connection.
+- Fixed a bug with InitSDKFromEnvironment that could prevent container fleet validation.
+- Updated the default logger to write to log files denoted by process ID.
+- Added default behavior to onProcessTerminate to call ProcessEnding and Destroy.
+- Improved client-side input validation for all websocket APIs.
