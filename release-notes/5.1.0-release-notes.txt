@@ -1,0 +1,4 @@
+- Improved the reliability of the SDK by adding automatic reconnection in the event of network interruption.
+- Added a parameterless initialization method: InitSDKFromEnvironment().
+- Fixed the problem of logs failing to upload to S3 due to an issue with initialization of fleet roles.
+- Fixed the problem of heartbeats being missed, which caused the server to erroneously report UNHEALTHY from a Write-Connect bug.
