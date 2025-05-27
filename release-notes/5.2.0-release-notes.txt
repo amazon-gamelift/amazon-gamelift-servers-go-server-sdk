@@ -1,0 +1,3 @@
+- Added support for GameLift container fleets.
+- Added the option to initialize the SDK using AWS Region and AWS Credentials, providing an alternative to AuthToken based authentication.
+- Increased read/write buffer size to avoid a timeout issue when sending/receiving large messages.

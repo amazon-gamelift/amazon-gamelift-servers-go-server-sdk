@@ -1,0 +1,3 @@
+- Adds more specific and improved error responses to API errors.
+- Includes autoBackfillMode in the data passed in the OnUpdateGameSession() callback.
+- Adds support for remote repository imports via github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk.
