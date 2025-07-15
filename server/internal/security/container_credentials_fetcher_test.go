@@ -7,14 +7,15 @@ package security_test
 
 import (
 	"errors"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/internal/mock"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/internal/security"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/internal/transport"
 	"io"
 	"net/http"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/mock"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/security"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/transport"
 
 	"github.com/golang/mock/gomock"
 )

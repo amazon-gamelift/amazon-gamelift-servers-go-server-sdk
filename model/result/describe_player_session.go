@@ -8,8 +8,8 @@ package result
 import (
 	"fmt"
 
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/common"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/common"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model"
 )
 
 // DescribePlayerSessionsResult - see https://docs.aws.amazon.com/gamelift/latest/apireference/API_DescribePlayerSessions.html.

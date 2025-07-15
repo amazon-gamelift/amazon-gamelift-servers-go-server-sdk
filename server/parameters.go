@@ -5,9 +5,7 @@
 
 package server
 
-import (
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model"
-)
+import "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model"
 
 // ServerParameters - object communicating the following information about the server
 // communication with Amazon GameLift Servers from an Anywhere server. This parameter isn't required for servers hosted on

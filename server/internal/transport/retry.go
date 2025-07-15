@@ -8,8 +8,8 @@ package transport
 import (
 	"time"
 
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/common"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/log"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/common"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/log"
 )
 
 type retryTransport struct {

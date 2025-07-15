@@ -7,11 +7,12 @@ package server
 
 import (
 	"fmt"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/common"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model/request"
 	"strings"
 	"testing"
+
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/common"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/request"
 )
 
 const (

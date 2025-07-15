@@ -9,8 +9,8 @@ import (
 	"io"
 	"net/url"
 
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/common"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model/message"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/common"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/message"
 )
 
 // IWebSocketClient - interface that manages a weboscket connection.

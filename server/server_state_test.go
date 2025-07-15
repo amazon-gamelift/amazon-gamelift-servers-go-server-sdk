@@ -15,12 +15,12 @@ import (
 	"github.com/golang/mock/gomock"
 	"go.uber.org/goleak"
 
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/common"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model/message"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model/request"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model/result"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/internal/mock"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/common"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/message"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/request"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/result"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/mock"
 )
 
 const TestHealthCheckInterval = "200ms"

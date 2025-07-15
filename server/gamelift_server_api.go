@@ -6,14 +6,15 @@
 package server
 
 import (
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/common"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model/request"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model/result"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/internal"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/internal/transport"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/log"
 	"net/http"
+
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/common"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/request"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/result"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/transport"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/log"
 )
 
 var srv iGameLiftServerState

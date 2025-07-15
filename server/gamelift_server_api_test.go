@@ -6,12 +6,13 @@
 package server
 
 import (
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/common"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/internal/mock"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/internal/security"
-	"github.com/golang/mock/gomock"
 	"os"
 	"testing"
+
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/common"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/mock"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/security"
+	"github.com/golang/mock/gomock"
 )
 
 type TestEnvironment struct {

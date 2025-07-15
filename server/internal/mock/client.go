@@ -5,9 +5,9 @@
 package mock
 
 import (
-	common "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/common"
-	message "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model/message"
-	internal "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/internal"
+	common "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/common"
+	message "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/message"
+	internal "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal"
 	url "net/url"
 	reflect "reflect"
 
