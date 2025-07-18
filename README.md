@@ -1,32 +1,42 @@
-# Go sever SDK for Amazon GameLift Servers
+# Go server SDK for Amazon GameLift Servers
 
 ## Documentation
+
 You can find the official Amazon GameLift Servers documentation [here](https://docs.aws.amazon.com/gamelift/).
 
 ## Minimum requirements:
- * [Go 1.18 or newer](https://golang.org/dl/)
- * [Make](https://www.gnu.org/software/make/) utility and [Docker](https://www.docker.com/) to run tests and linter
+
+- [Go 1.18 or newer](https://golang.org/dl/)
+- [Make](https://www.gnu.org/software/make/) utility and [Docker](https://www.docker.com/) to run tests and linter
+
+## Installation
+
+```bash
+go get github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5
+```
 
 ## Installation (Local Beta)
- 1. You can add the local module by using replace in your go.mod file:
+
+1.  You can add the local module by using replace in your go.mod file:
     ```go
     // replace the local path with a relative path from your project root to where you unpacked the SDK
-    replace github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk => ../path/to/amazon-gamelift-servers-go-server-sdk
+    replace github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5 => ../path/to/amazon-gamelift-servers-go-server-sdk
     ```
- 2. Import it in your code:
-	```golang
+2.  Import it in your code:
+    ```golang
     import (
-	    "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model"
-	    "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server"
+        "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model"
+        "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server"
     )
     ```
- 3. Then run go mod tidy in your project root
+3.  Then run go mod tidy in your project root
     ```sh
     go mod tidy
     ```
     This will set up the proper local dependencies.
 
 ### Example code
+
 ```golang
 package main
 
