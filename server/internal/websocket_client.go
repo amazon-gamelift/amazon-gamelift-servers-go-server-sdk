@@ -11,10 +11,10 @@ import (
 	"net/url"
 	"sync"
 
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/common"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/message"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/transport"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/log"
+	"github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/common"
+	"github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/model/message"
+	"github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/server/internal/transport"
+	"github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/server/log"
 )
 
 var (

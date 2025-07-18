@@ -9,10 +9,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/common"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/mock"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/security"
 	"github.com/golang/mock/gomock"
+	"github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/common"
+	"github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/server/internal/mock"
+	"github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/server/internal/security"
 )
 
 type TestEnvironment struct {

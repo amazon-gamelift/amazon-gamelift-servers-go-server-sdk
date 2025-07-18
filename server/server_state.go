@@ -13,13 +13,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/common"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/message"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/request"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/result"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/security"
+	"github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/common"
+	"github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/model"
+	"github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/model/message"
+	"github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/model/request"
+	"github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/model/result"
+	"github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/server/internal"
+	"github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/server/internal/security"
 )
 
 var localRnd *rand.Rand

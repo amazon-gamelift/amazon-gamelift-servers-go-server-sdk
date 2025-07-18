@@ -10,9 +10,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/common"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/request"
+	"github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/common"
+	"github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/model"
+	"github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/model/request"
 )
 
 const (

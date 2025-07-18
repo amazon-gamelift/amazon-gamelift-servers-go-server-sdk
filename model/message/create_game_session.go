@@ -5,7 +5,7 @@
 
 package message
 
-import "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model"
+import "github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/model"
 
 // CreateGameSessionMessage - Message from Amazon GameLift Servers initializing GameSession Creation
 type CreateGameSessionMessage struct {

@@ -6,8 +6,8 @@
 package response
 
 import (
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/message"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/result"
+	"github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/model/message"
+	"github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/model/result"
 )
 
 type GetFleetRoleCredentialsResponse struct {

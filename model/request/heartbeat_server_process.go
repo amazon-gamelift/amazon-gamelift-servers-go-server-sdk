@@ -5,7 +5,7 @@
 
 package request
 
-import "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/message"
+import "github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/model/message"
 
 // HeartbeatServerProcessRequest - Message from Amazon GameLift Servers or Customer reporting process health.
 //

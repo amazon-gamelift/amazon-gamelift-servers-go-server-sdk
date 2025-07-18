@@ -5,7 +5,7 @@
 
 package internal
 
-import "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model"
+import "github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/model"
 
 // IGameLiftMessageHandler - async messages handlers from game server process or APIG.
 //

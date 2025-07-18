@@ -13,9 +13,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/mock"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/security"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/transport"
+	"github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/server/internal/mock"
+	"github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/server/internal/security"
+	"github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/server/internal/transport"
 
 	"github.com/golang/mock/gomock"
 )

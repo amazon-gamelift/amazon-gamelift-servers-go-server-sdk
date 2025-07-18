@@ -6,8 +6,8 @@
 package request
 
 import (
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/message"
+	"github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/model"
+	"github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/model/message"
 )
 
 // StartMatchBackfillRequest - This request is sent to Amazon GameLift Servers WebSocket during a DescribePlayerSessionsRequest call.

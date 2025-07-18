@@ -11,7 +11,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/transport"
+	"github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/server/internal/transport"
 )
 
 const (

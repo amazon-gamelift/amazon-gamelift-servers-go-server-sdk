@@ -1,4 +1,4 @@
-module github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5
+module github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5
 
 go 1.18
 

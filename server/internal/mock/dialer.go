@@ -5,7 +5,7 @@
 package mock
 
 import (
-	transport "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/transport"
+	transport "github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/server/internal/transport"
 	http "net/http"
 	reflect "reflect"
 

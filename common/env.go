@@ -12,7 +12,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/log"
+	"github.com/jamesstow/amazon-gamelift-servers-go-server-sdk/v5/server/log"
 )
 
 // GetEnvStringOrDefault - returns environment variable by key or the default string value otherwise
