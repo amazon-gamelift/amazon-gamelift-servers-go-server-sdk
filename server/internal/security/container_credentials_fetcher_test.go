@@ -7,14 +7,15 @@ package security_test
 
 import (
 	"errors"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/internal/mock"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/internal/security"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/internal/transport"
 	"io"
 	"net/http"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/mock"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/security"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/transport"
 
 	"github.com/golang/mock/gomock"
 )
@@ -43,9 +44,9 @@ func TestContainerCredentialsFetcher_FetchContainerCredentials_ValidCredentials(
 	_ = os.Setenv(security.EnvironmentVariableContainerCredentials, "/v2/credentials")
 	mockHttpClient := mock.NewMockHttpClient(ctrl)
 	validCredentials := `{
-		"AccessKeyId": "AKIAIOSFODNN7EXAMPLE",
-		"SecretAccessKey": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
-		"Token": "AQoDYXdzEJr...<remainder of security token>",
+		"AccessKeyId": "Abc",
+		"SecretAccessKey": "Def",
+		"Token": "Token...<remainder of security token>",
 		"Expiration": "2024-08-08T18:44:24Z"
 	}`
 	response := &http.Response{
@@ -67,7 +68,7 @@ func TestContainerCredentialsFetcher_FetchContainerCredentials_ValidCredentials(
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if awsCredentials.AccessKey != "AKIAIOSFODNN7EXAMPLE" || awsCredentials.SecretKey != "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY" || awsCredentials.SessionToken != "AQoDYXdzEJr...<remainder of security token>" {
+	if awsCredentials.AccessKey != "Abc" || awsCredentials.SecretKey != "Def" || awsCredentials.SessionToken != "Token...<remainder of security token>" {
 		t.Fatalf("unexpected credentials: %+v", awsCredentials)
 	}
 }

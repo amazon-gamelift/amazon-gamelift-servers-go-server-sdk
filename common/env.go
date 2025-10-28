@@ -6,12 +6,13 @@
 package common
 
 import (
-	"github.com/google/uuid"
 	"os"
 	"strconv"
 	"time"
 
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/log"
+	"github.com/google/uuid"
+
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/log"
 )
 
 // GetEnvStringOrDefault - returns environment variable by key or the default string value otherwise

@@ -5,6 +5,7 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -12,16 +13,43 @@ import (
 	"testing"
 	"time"
 
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/metrics"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/log"
 	"github.com/golang/mock/gomock"
 	"go.uber.org/goleak"
 
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/common"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model/message"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model/request"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model/result"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/internal/mock"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/common"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/message"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/request"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/result"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/mock"
 )
+
+// mockFactory is a simple mock implementation for testing
+type mockFactory struct {
+	onStartGameSessionCalled   bool
+	onProcessTerminationCalled bool
+	stopCalled                 bool
+	sessionID                  string
+}
+
+func (m *mockFactory) Gauge(key string) (*metrics.Gauge, error)     { return nil, nil }
+func (m *mockFactory) Counter(key string) (*metrics.Counter, error) { return nil, nil }
+func (m *mockFactory) Timer(key string) (*metrics.Timer, error)     { return nil, nil }
+func (m *mockFactory) Start(ctx context.Context) error              { return nil }
+func (m *mockFactory) Stop() error {
+	m.stopCalled = true
+	return nil
+}
+func (m *mockFactory) OnProcessStart() {}
+func (m *mockFactory) OnStartGameSession(sessionId string) {
+	m.onStartGameSessionCalled = true
+	m.sessionID = sessionId
+}
+func (m *mockFactory) OnProcessTermination() {
+	m.onProcessTerminationCalled = true
+}
 
 const TestHealthCheckInterval = "200ms"
 const TestHealthCheckTimeout = "50ms"
@@ -935,4 +963,103 @@ func setupNewMockIGameLiftManager(t *testing.T) *mock.MockIGameLiftManager {
 	SetLoggerInterface(logger)
 
 	return manager
+}
+
+func setupMetricsTest(t *testing.T) (*mockFactory, *gameLiftServerState) {
+	// Set up logger to avoid nil pointer panic
+	if lg == nil {
+		lg = log.GetDefaultLogger("test")
+	}
+
+	mock := &mockFactory{}
+	state := &gameLiftServerState{
+		metricsFactory: mock,
+	}
+
+	return mock, state
+}
+
+func setupMetricsTestWithManager(t *testing.T) (*mockFactory, *gameLiftServerState, *mock.MockIGameLiftManager) {
+	ctrl := gomock.NewController(t)
+	mockManager := mock.NewMockIGameLiftManager(ctrl)
+
+	mock := &mockFactory{}
+	state := &gameLiftServerState{
+		metricsFactory: mock,
+		wsGameLift:     mockManager,
+	}
+
+	return mock, state, mockManager
+}
+
+func TestOnStartGameSession_CallsMetricsFactory(t *testing.T) {
+	// GIVEN: A server state with metrics factory is set up
+	mock, state := setupMetricsTest(t)
+
+	// WHEN: OnStartGameSession is called with nil session
+	state.OnStartGameSession(nil)
+	
+	// THEN: Should not call metrics factory
+	if mock.onStartGameSessionCalled {
+		t.Error("Expected OnStartGameSession NOT to be called with nil session")
+	}
+
+	// GIVEN: A valid game session
+	gameSession := &model.GameSession{
+		GameSessionID: "test-session-123",
+	}
+
+	// WHEN: OnStartGameSession is called with valid session
+	state.OnStartGameSession(gameSession)
+
+	// THEN: Should call metrics factory with correct session ID
+	if !mock.onStartGameSessionCalled {
+		t.Error("Expected OnStartGameSession to be called on metrics factory")
+	}
+	if mock.sessionID != "test-session-123" {
+		t.Errorf("Expected session ID 'test-session-123', got '%s'", mock.sessionID)
+	}
+}
+
+func TestOnTerminateProcess_CallsMetricsFactory(t *testing.T) {
+	// GIVEN: A server state with metrics factory and termination handler
+	mock, state := setupMetricsTest(t)
+
+	state.parameters = &ProcessParameters{
+		OnProcessTerminate: func() {
+			// Empty handler to prevent processEnding() call
+		},
+	}
+
+	terminationTime := int64(1640995200000) // Example timestamp in milliseconds
+
+	// WHEN: OnTerminateProcess is called
+	state.OnTerminateProcess(terminationTime)
+
+	// THEN: Should call OnProcessTermination on metrics factory
+	if !mock.onProcessTerminationCalled {
+		t.Error("Expected OnProcessTermination to be called on metrics factory")
+	}
+}
+
+func TestDestroy_SetsMetricsFactoryToNil(t *testing.T) {
+	// GIVEN: A server state with metrics factory and manager
+	_, state, mockManager := setupMetricsTestWithManager(t)
+	defer mockManager.EXPECT().Disconnect().Return(nil)
+
+	if state.metricsFactory == nil {
+		t.Error("Expected metricsFactory to be set initially")
+	}
+
+	// WHEN: destroy is called
+	err := state.destroy()
+
+	// THEN: Should complete without error and set factory to nil
+	if err != nil {
+		t.Errorf("Unexpected error from destroy(): %v", err)
+	}
+
+	if state.metricsFactory != nil {
+		t.Error("Expected metricsFactory to be nil after destroy()")
+	}
 }

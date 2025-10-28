@@ -13,13 +13,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/common"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model/message"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model/request"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model/result"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/internal"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/internal/security"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/common"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/metrics"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/message"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/request"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/result"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/security"
 )
 
 var localRnd *rand.Rand
@@ -48,6 +49,7 @@ type iGameLiftServerState interface {
 	stopMatchBackfill(*request.StopMatchBackfillRequest) error
 	getComputeCertificate() (result.GetComputeCertificateResult, error)
 	getFleetRoleCredentials(*request.GetFleetRoleCredentialsRequest) (result.GetFleetRoleCredentialsResult, error)
+	setMetricsFactory(metrics.IFactory)
 	destroy() error
 }
 
@@ -72,6 +74,8 @@ type gameLiftServerState struct {
 	healthCheckInterval     time.Duration
 	healthCheckTimeout      time.Duration
 	serviceCallTimeout      time.Duration
+
+	metricsFactory metrics.IFactory
 
 	shutdown chan bool
 }
@@ -203,6 +207,8 @@ func (state *gameLiftServerState) processReady(params *ProcessParameters) error 
 	)
 	req.LogPaths = params.LogParameters.LogPaths
 
+	// Detect GameLift tools
+	detectGameLiftTools()
 	// Add the tool name and version to the request if the environment variables are set
 	sdkToolName := common.GetEnvStringOrDefault(common.EnvironmentKeySDKToolName, "")
 	if sdkToolName != "" {
@@ -437,6 +443,7 @@ func (state *gameLiftServerState) destroy() error {
 	}
 	err := state.wsGameLift.Disconnect()
 	state.wsGameLift = nil
+	state.metricsFactory = nil
 	return err
 }
 
@@ -509,6 +516,9 @@ func (state *gameLiftServerState) OnStartGameSession(session *model.GameSession)
 		lg.Warnf("OnStartGameSession was called with nil game session")
 		return
 	}
+	if state.metricsFactory != nil {
+		state.metricsFactory.OnStartGameSession(session.GameSessionID)
+	}
 	// Inject data that already exists on the server
 	session.FleetID = state.fleetID
 	lg.Debugf("server got the startGameSession signal. GameSession : %s", session.GameSessionID)
@@ -551,11 +561,18 @@ func (state *gameLiftServerState) OnUpdateGameSession(
 	}
 }
 
+func (state *gameLiftServerState) setMetricsFactory(metricsFactory metrics.IFactory) {
+	state.metricsFactory = metricsFactory
+}
+
 // OnTerminateProcess - handler for message.TerminateProcessMessage (already started in a separate goroutine).
 func (state *gameLiftServerState) OnTerminateProcess(terminationTime int64) {
 	// terminationTime is milliseconds that have elapsed since Unix epoch time begins (00:00:00 UTC Jan 1 1970).
 	state.terminationTime = terminationTime / 1000
 	lg.Debugf("ServerState got the terminateProcess signal. termination time : %d", state.terminationTime)
+	if state.metricsFactory != nil {
+		state.metricsFactory.OnProcessTermination()
+	}
 	if state.parameters != nil && state.parameters.OnProcessTerminate != nil {
 		state.parameters.OnProcessTerminate()
 	} else {
@@ -600,4 +617,10 @@ func isChannelOpen(ch <-chan bool) bool {
 	default:
 	}
 	return true
+}
+
+// detectGameLiftTools detects and sets environment variables for GameLift tools
+func detectGameLiftTools() {
+	metricsDetector := common.NewMetricsDetector()
+	metricsDetector.SetGameLiftTool()
 }

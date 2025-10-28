@@ -5,9 +5,9 @@
 package mock
 
 import (
-	internal "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/internal"
-	security "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/internal/security"
-	log "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/log"
+	internal "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal"
+	security "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/security"
+	log "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/log"
 	reflect "reflect"
 	time "time"
 

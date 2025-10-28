@@ -40,11 +40,20 @@ const (
 )
 
 const (
+	MetricsStatsdHostDefault        = "localhost"
+	MetricsStatsdPortDefault        = 8125
+	MetricsCrashReporterHostDefault = "localhost"
+	MetricsCrashReporterPortDefault = 8126
+	MetricsFlushIntervalMsDefault   = 10000
+	MetricsMaxPacketSizeDefault     = 512
+)
+
+const (
 	SdkLanguage                 = "Go"
 	SdkLanguageKey              = "sdkLanguage"
 	PidKey                      = "pID"
 	SdkVersionKey               = "sdkVersion"
-	SdkVersion                  = "5.3.0"
+	SdkVersion                  = "5.4.0"
 	AuthTokenKey                = "Authorization"
 	ComputeIDKey                = "ComputeId"
 	FleetIDKey                  = "FleetId"
@@ -82,4 +91,12 @@ const (
 	EnvironmentKeySessionToken   string = "GAMELIFT_SESSION_TOKEN"
 	EnvironmentKeySDKToolName    string = "GAMELIFT_SDK_TOOL_NAME"
 	EnvironmentKeySDKToolVersion string = "GAMELIFT_SDK_TOOL_VERSION"
+
+	// Metrics environment variables
+	EnvironmentKeyStatsdHost        string = "GAMELIFT_STATSD_HOST"
+	EnvironmentKeyStatsdPort        string = "GAMELIFT_STATSD_PORT"
+	EnvironmentKeyCrashReporterHost string = "GAMELIFT_CRASH_REPORTER_HOST"
+	EnvironmentKeyCrashReporterPort string = "GAMELIFT_CRASH_REPORTER_PORT"
+	EnvironmentKeyFlushIntervalMs   string = "GAMELIFT_FLUSH_INTERVAL_MS"
+	EnvironmentKeyMaxPacketSize     string = "GAMELIFT_MAX_PACKET_SIZE"
 )
