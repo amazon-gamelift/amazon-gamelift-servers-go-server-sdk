@@ -7,11 +7,12 @@ package server
 
 import (
 	"fmt"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/common"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model/request"
 	"strings"
 	"testing"
+
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/common"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/request"
 )
 
 const (
@@ -578,4 +579,77 @@ func TestValidateGetFleetRoleCredentialsRequest_InvalidParams(t *testing.T) {
 		t.Fatalf("Expected error, got nil")
 	}
 	common.AssertContains(t, err.Error(), fmt.Sprintf("RoleSessionName is invalid. Must match the pattern: %s.", roleSessionNameRegex.String()))
+}
+
+func TestValidateMetricsParameters(t *testing.T) {
+	input := &MetricsParameters{
+		StatsdHost:        common.MetricsStatsdHostDefault,
+		StatsdPort:        common.MetricsStatsdPortDefault,
+		CrashReporterHost: common.MetricsCrashReporterHostDefault,
+		CrashReporterPort: common.MetricsCrashReporterPortDefault,
+		FlushIntervalMs:   common.MetricsFlushIntervalMsDefault,
+		MaxPacketSize:     common.MetricsMaxPacketSizeDefault,
+	}
+	err := ValidateMetricsParameters(input)
+	if err != nil {
+		t.Errorf("Expected no error, got: %v", err)
+	}
+}
+
+func TestValidateMetricsParameters_InvalidParams(t *testing.T) {
+	tests := []struct {
+		name   string
+		params *MetricsParameters
+		errMsg string
+	}{
+		{
+			name: "empty StatsdHost",
+			params: &MetricsParameters{
+				StatsdHost:        "",
+				StatsdPort:        common.MetricsStatsdPortDefault,
+				CrashReporterHost: common.MetricsCrashReporterHostDefault,
+				CrashReporterPort: common.MetricsCrashReporterPortDefault,
+				FlushIntervalMs:   common.MetricsFlushIntervalMsDefault,
+				MaxPacketSize:     common.MetricsMaxPacketSizeDefault,
+			},
+			errMsg: "StatsdHost cannot be empty",
+		},
+		{
+			name: "invalid StatsdPort - too low",
+			params: &MetricsParameters{
+				StatsdHost:        common.MetricsStatsdHostDefault,
+				StatsdPort:        common.PortMin - 1,
+				CrashReporterHost: common.MetricsCrashReporterHostDefault,
+				CrashReporterPort: common.MetricsCrashReporterPortDefault,
+				FlushIntervalMs:   common.MetricsFlushIntervalMsDefault,
+				MaxPacketSize:     common.MetricsMaxPacketSizeDefault,
+			},
+			errMsg: fmt.Sprintf("StatsdPort must be between %d and %d", common.PortMin, common.PortMax),
+		},
+		{
+			name: "negative FlushIntervalMs",
+			params: &MetricsParameters{
+				StatsdHost:        common.MetricsStatsdHostDefault,
+				StatsdPort:        common.MetricsStatsdPortDefault,
+				CrashReporterHost: common.MetricsCrashReporterHostDefault,
+				CrashReporterPort: common.MetricsCrashReporterPortDefault,
+				FlushIntervalMs:   -1,
+				MaxPacketSize:     common.MetricsMaxPacketSizeDefault,
+			},
+			errMsg: "FlushIntervalMs must be non-negative",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateMetricsParameters(tt.params)
+			if err == nil {
+				t.Errorf("Expected error, got nil")
+				return
+			}
+			if !strings.Contains(err.Error(), tt.errMsg) {
+				t.Errorf("Expected error message to contain '%s', got: %v", tt.errMsg, err)
+			}
+		})
+	}
 }

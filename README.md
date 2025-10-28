@@ -11,13 +11,13 @@ You can find the official Amazon GameLift Servers documentation [here](https://d
  1. You can add the local module by using replace in your go.mod file:
     ```go
     // replace the local path with a relative path from your project root to where you unpacked the SDK 
-    replace github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk => ../path/to/amazon-gamelift-servers-go-server-sdk
+    replace github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5 => ../path/to/amazon-gamelift-servers-go-server-sdk
     ```
  2. Import it in your code:
 	```golang
     import (
-	    "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model"
-	    "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server"
+	    "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model"
+	    "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server"
     )
     ```
  3. Then run go mod tidy in your project root
@@ -31,8 +31,8 @@ You can find the official Amazon GameLift Servers documentation [here](https://d
 package main
 
 import (
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server"
 	"log"
 )
 
@@ -121,3 +121,8 @@ func main() {
 	// Start handling player connections here.
 }
 ```
+
+## Metrics
+
+This SDK enables the feature to collect and ship telemetry metrics from your game servers hosted on Amazon GameLift Servers to
+AWS services for monitoring and observability. For detailed setup and usage instructions, see [METRICS.md](./telemetry-metrics/METRICS.md).

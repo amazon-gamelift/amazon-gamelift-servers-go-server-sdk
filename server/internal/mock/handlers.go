@@ -5,7 +5,7 @@
 package mock
 
 import (
-	model "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model"
+	model "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"

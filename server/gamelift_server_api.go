@@ -6,19 +6,22 @@
 package server
 
 import (
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/common"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model/request"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model/result"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/internal"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/internal/transport"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/log"
 	"net/http"
+
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/common"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/metrics"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/request"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/result"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/transport"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/log"
 )
 
 var srv iGameLiftServerState
 var state gameLiftServerState
 var manager internal.IGameLiftManager
+var metricsFactory metrics.IFactory
 var lg log.ILogger
 
 // SetLoggerInterface - use this function to inject custom logger to the sever SDK.
@@ -71,6 +74,9 @@ func InitSDK(params ServerParameters) error {
 	}
 	err := state.init(params, manager)
 	srv = &state
+	if metricsFactory != nil {
+		srv.setMetricsFactory(metricsFactory)
+	}
 	return err
 }
 
@@ -85,6 +91,76 @@ func InitSDK(params ServerParameters) error {
 //	err := server.InitSDKFromEnvironment()
 func InitSDKFromEnvironment() error {
 	return InitSDK(ServerParameters{})
+}
+
+// InitMetrics - initializes the metrics system with the specified configuration parameters.
+// For best results, it's recommended to call this method before InitSDK() to enable metrics collection.
+//
+// Parameter values are applied as provided by the user.
+// To use only environment variables and fallback to defaults, call InitMetricsFromEnvironment() instead.
+//
+// Returns a Metrics instance and an error. If successful, the error is nil and the Metrics can be used to create metrics.
+//
+//	metricsParams := server.MetricsParameters{
+//		StatsdHost:        "localhost",
+//		StatsdPort:        8125,
+//		CrashReporterHost: "crash-host",
+//		CrashReporterPort: 9999,
+//		FlushIntervalMs:   1000,
+//		MaxPacketSize:     1024,
+//	}
+//	metrics, err := server.InitMetrics(metricsParams)
+//	if err == nil {
+//		// use metrics to create counters, gauges, timers
+//		counter, _ := metrics.Counter("my_counter")
+//		gauge, _ := metrics.Gauge("my_gauge")
+//		timer, _ := metrics.Timer("my_timer")
+//	}
+func InitMetrics(metricsParameters MetricsParameters) (*Metrics, error) {
+	if metricsFactory != nil {
+		return nil, common.NewGameLiftError(common.AlreadyInitialized, "Already initialized", "You can only initialize metrics once.")
+	}
+	var err error
+	var localMetrics *Metrics
+	localMetrics, metricsFactory, err = createMetrics(&metricsParameters, srv)
+	if err != nil {
+		return nil, err
+	}
+	return localMetrics, nil
+}
+
+// InitMetricsFromEnvironment - initializes the metrics system with default configuration parameters.
+// For best results, it's recommended to call this method before InitSDK() to enable metrics collection.
+//
+// Parameter values are applied in this order of precedence:
+//  1. Environment variables (GAMELIFT_STATSD_HOST, GAMELIFT_STATSD_PORT, etc.)
+//  2. Default values if environment variables are not set
+//
+// Default values: localhost:8125 for StatsD, localhost:8126 for crash reporter,
+// 10000ms flush interval, 512 bytes max packet size.
+//
+// Returns a Metrics instance and an error. If successful, the error is nil and the Metrics can be used to create metrics.
+//
+//	metrics, err := server.InitMetricsFromEnvironment()
+//	if err == nil {
+//		// use metrics to create counters, gauges, timers
+//		counter, _ := metrics.Counter("requests_total")
+//		gauge, _ := metrics.Gauge("active_players")
+//		timer, _ := metrics.Timer("request_duration")
+//	} else {
+//		fmt.Printf("Failed to initialize metrics: %v\n", err)
+//	}
+func InitMetricsFromEnvironment() (*Metrics, error) {
+	params := MetricsParameters{
+		StatsdHost:        common.MetricsStatsdHostDefault,
+		StatsdPort:        common.MetricsStatsdPortDefault,
+		CrashReporterHost: common.MetricsCrashReporterHostDefault,
+		CrashReporterPort: common.MetricsCrashReporterPortDefault,
+		FlushIntervalMs:   common.MetricsFlushIntervalMsDefault,
+		MaxPacketSize:     common.MetricsMaxPacketSizeDefault,
+	}
+	params = *applyEnvironmentOverrides(&params)
+	return InitMetrics(params)
 }
 
 // ProcessReady - notifies Amazon GameLift Servers that the server process is ready to host game sessions (receive model.GameSession).
@@ -376,7 +452,9 @@ func Destroy() error {
 			return err
 		}
 	}
+	terminateMetricsFactory(metricsFactory)
 	manager = nil
 	srv = nil
+	metricsFactory = nil
 	return nil
 }

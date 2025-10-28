@@ -7,6 +7,7 @@ package log
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -31,7 +32,7 @@ func (d *defaultLogger) Warnf(pattern string, arg ...any) {
 }
 
 // GetDefaultLogger - returns a default logger implementation.
-// That logger write all logs into stderr and based on standard golang logger implementation.
+// That logger write all logs into both file and stdout.
 func GetDefaultLogger(processId string) ILogger {
 	err := os.Mkdir("logs",  0o755)
 	if err != nil && !os.IsExist(err) {
@@ -44,7 +45,9 @@ func GetDefaultLogger(processId string) ILogger {
 		log.Fatalf("error opening file: %v", err)
 	}
 
-	return &defaultLogger{log.New(f, "", log.LstdFlags)}
+	// Create a MultiWriter to write to both file and stdout
+	multiWriter := io.MultiWriter(f, os.Stdout)
+	return &defaultLogger{log.New(multiWriter, "", log.LstdFlags)}
 }
 
 // Helper function to sanitize the processId

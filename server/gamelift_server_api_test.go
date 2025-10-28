@@ -6,12 +6,15 @@
 package server
 
 import (
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/common"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/internal/mock"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/internal/security"
-	"github.com/golang/mock/gomock"
 	"os"
+	"strings"
 	"testing"
+
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/common"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/metrics"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/mock"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/security"
+	"github.com/golang/mock/gomock"
 )
 
 type TestEnvironment struct {
@@ -591,4 +594,114 @@ func TestDestroy(t *testing.T) {
 	if srv != nil {
 		t.Fatal("Server should be uninitialized")
 	}
+}
+
+func TestInitMetrics_AlreadyInitialized(t *testing.T) {
+	// GIVEN: Metrics factory is already initialized
+	originalMetricsFactory := metricsFactory
+	defer func() {
+		metricsFactory = originalMetricsFactory
+	}()
+
+	metricsFactory = &metrics.Factory{} // Simulate already initialized
+
+	// WHEN: InitMetrics is called again
+	_, err := InitMetrics(MetricsParameters{
+		StatsdHost:        "localhost",
+		StatsdPort:        8125,
+		FlushIntervalMs:   1000,
+		CrashReporterHost: "crash-reporter.example.com",
+		CrashReporterPort: common.MetricsCrashReporterPortDefault,
+	})
+
+	// THEN: Should return AlreadyInitialized error
+	if err == nil {
+		t.Error("Expected error when calling InitMetrics with already initialized factory")
+	}
+
+	expectedError := "Already initialized"
+	if !strings.Contains(err.Error(), expectedError) {
+		t.Errorf("Expected error to contain '%s', got: %v", expectedError, err)
+	}
+}
+
+func TestInitMetrics_ValidationError(t *testing.T) {
+	// GIVEN: No metrics factory is initialized
+	originalMetricsFactory := metricsFactory
+	defer func() {
+		metricsFactory = originalMetricsFactory
+	}()
+
+	metricsFactory = nil
+
+	// WHEN: InitMetrics is called with invalid parameters
+	_, err := InitMetrics(MetricsParameters{
+		StatsdHost:      "", // Invalid: empty host
+		StatsdPort:      8125,
+		FlushIntervalMs: 1000,
+	})
+
+	// THEN: Should return validation error
+	if err == nil {
+		t.Error("Expected validation error for empty StatsdHost")
+	}
+}
+
+func TestDestroy_StopMetricsFactory(t *testing.T) {
+	// GIVEN: A metrics factory is set
+	originalFactory := metricsFactory
+	defer func() { metricsFactory = originalFactory }()
+
+	mockFactory := &mockFactory{stopCalled: false}
+	metricsFactory = mockFactory
+	srv = nil
+
+	// WHEN: Destroy is called
+	Destroy()
+
+	// THEN: State should be reset (TerminateMetricsProcessor is called internally)
+	if srv != nil {
+		t.Error("Expected srv to be nil after Destroy")
+	}
+	if metricsFactory != nil {
+		t.Error("Expected metricsFactory to be nil after Destroy")
+	}
+	// Note: TerminateMetricsProcessor() is called internally but we can't easily mock
+	// the global processor from this package. The important thing is that state is cleaned up.
+}
+
+func TestInitMetrics_Success(t *testing.T) {
+	// GIVEN: No metrics factory is initialized
+	originalMetricsFactory := metricsFactory
+	defer func() {
+		metricsFactory = originalMetricsFactory
+	}()
+
+	metricsFactory = nil
+
+	params := MetricsParameters{
+		StatsdHost:        "localhost",
+		StatsdPort:        8125,
+		CrashReporterHost: "localhost",
+		CrashReporterPort: 8126,
+		FlushIntervalMs:   1000,
+		MaxPacketSize:     512,
+	}
+
+	// WHEN: InitMetrics is called with valid parameters
+	factory, err := InitMetrics(params)
+
+	// THEN: Factory should be created and global state should be set
+	if err != nil {
+		t.Errorf("Expected no error, got: %v", err)
+	}
+	if factory == nil {
+		t.Error("Expected factory to be returned")
+	}
+	if metricsFactory == nil {
+		t.Error("Expected global metricsFactory to be set")
+	}
+
+	// Clean up
+	Destroy()
 }

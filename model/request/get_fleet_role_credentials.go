@@ -6,7 +6,7 @@
 package request
 
 import (
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model/message"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/message"
 )
 
 // GetFleetRoleCredentialsRequest - Request to Amazon GameLift Servers to get credentials for the fleet.
