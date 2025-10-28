@@ -6,7 +6,7 @@
 package server
 
 import (
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model"
 )
 
 // ServerParameters - object communicating the following information about the server
@@ -88,4 +88,21 @@ type LogParameters struct {
 	// then the log path would be c:\game\MyGame\sessionLogs (on a Windows instance)
 	// or /local/game/MyGame/sessionLogs (on a Linux instance).
 	LogPaths []string
+}
+
+// MetricsParameters - object communicating configuration parameters for initializing the metrics system.
+// This configuration is used to set up StatsD reporting, crash reporting, and metrics processing behavior.
+//   - StatsdHost - the StatsD server host for metrics reporting (e.g., "localhost").
+//   - StatsdPort - the StatsD server port for metrics reporting (e.g., 8125).
+//   - CrashReporterHost - the crash reporter host for crash tracking and process monitoring.
+//   - CrashReporterPort - the crash reporter port for crash tracking and process monitoring.
+//   - FlushIntervalMs - the metrics flush interval in milliseconds. Controls how frequently metrics are sent to StatsD.
+//   - MaxPacketSize - the maximum packet size for metrics in bytes. Limits the size of UDP packets sent to StatsD.
+type MetricsParameters struct {
+	StatsdHost        string
+	StatsdPort        int
+	CrashReporterHost string
+	CrashReporterPort int
+	FlushIntervalMs   int
+	MaxPacketSize     int
 }

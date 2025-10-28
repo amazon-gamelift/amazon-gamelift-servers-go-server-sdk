@@ -6,8 +6,8 @@
 package internal
 
 import (
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/internal/transport"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/log"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/transport"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/log"
 )
 
 type WebsocketClient = websocketClient

@@ -7,10 +7,11 @@ package server
 
 import (
 	"fmt"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/common"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model"
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model/request"
 	"regexp"
+
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/common"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/request"
 )
 
 // Regex Patterns
@@ -197,6 +198,28 @@ func ValidateGetFleetRoleCredentialsRequest(input request.GetFleetRoleCredential
 	err = common.ValidateString("RoleSessionName", input.RoleSessionName, roleSessionNameRegex, 2, common.RoleSessionNameMaxLength, true, "")
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func ValidateMetricsParameters(params *MetricsParameters) error {
+	if params.StatsdHost == "" {
+		return common.NewGameLiftError(common.ValidationException, "StatsdHost cannot be empty", "")
+	}
+	if params.StatsdPort < common.PortMin || params.StatsdPort > common.PortMax {
+		return common.NewGameLiftError(common.ValidationException, fmt.Sprintf("StatsdPort must be between %d and %d", common.PortMin, common.PortMax), "")
+	}
+	if params.CrashReporterHost == "" {
+		return common.NewGameLiftError(common.ValidationException, "CrashReporterHost cannot be empty", "")
+	}
+	if params.CrashReporterPort < common.PortMin || params.CrashReporterPort > common.PortMax {
+		return common.NewGameLiftError(common.ValidationException, fmt.Sprintf("CrashReporterPort must be between %d and %d", common.PortMin, common.PortMax), "")
+	}
+	if params.FlushIntervalMs < 0 {
+		return common.NewGameLiftError(common.ValidationException, "FlushIntervalMs must be non-negative", "")
+	}
+	if params.MaxPacketSize < 0 {
+		return common.NewGameLiftError(common.ValidationException, "MaxPacketSize must be non-negative", "")
 	}
 	return nil
 }

@@ -83,6 +83,12 @@ const (
 	WebsocketClosingError
 	// UnknownException - Unknown error. Used for testing purposes, never thrown.
 	UnknownException
+	// MetricTransportException - Failure to send metrics via transport.
+	MetricTransportException
+	// MetricConfigurationException - Invalid metric configuration or setup.
+	MetricConfigurationException
+	// MetricUnsupportedTypeException - Unsupported metric type.
+	MetricUnsupportedTypeException
 )
 
 type errorDescription struct {
@@ -235,6 +241,18 @@ var errorMessages = map[GameLiftErrorType]errorDescription{
 	UnknownException: {
 		name:    "Unknown exception.",
 		message: "Unknown exception.",
+	},
+	MetricTransportException: {
+		name:    "Metric transport exception.",
+		message: "Failed to send metric via transport.",
+	},
+	MetricConfigurationException: {
+		name:    "Metric configuration exception.",
+		message: "Invalid metric configuration or setup.",
+	},
+	MetricUnsupportedTypeException: {
+		name:    "Metric unsupported type exception.",
+		message: "Unsupported metric type.",
 	},
 }
 

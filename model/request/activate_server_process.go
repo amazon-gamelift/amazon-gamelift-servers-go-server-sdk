@@ -6,7 +6,7 @@
 package request
 
 import (
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/model/message"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/message"
 )
 
 // ActivateServerProcessRequest - This request is sent to Amazon GameLift Servers WebSocket during the ProcessReady call.

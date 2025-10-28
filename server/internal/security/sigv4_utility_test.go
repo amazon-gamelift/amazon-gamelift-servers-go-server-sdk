@@ -6,9 +6,10 @@
 package security_test
 
 import (
-	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/server/internal/security"
 	"testing"
 	"time"
+
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/security"
 )
 
 // GIVEN valid SigV4Parameters WHEN GenerateSigV4QueryParameters THEN return expected query parameters
