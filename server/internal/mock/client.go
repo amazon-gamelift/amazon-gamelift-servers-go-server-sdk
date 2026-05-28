@@ -102,3 +102,15 @@ func (mr *MockIWebSocketClientMockRecorder) SendRequest(arg0, arg1 interface{}) 
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendRequest", reflect.TypeOf((*MockIWebSocketClient)(nil).SendRequest), arg0, arg1)
 }
+
+// NotifyRequestTimeout mocks base method.
+func (m *MockIWebSocketClient) NotifyRequestTimeout() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "NotifyRequestTimeout")
+}
+
+// NotifyRequestTimeout indicates an expected call of NotifyRequestTimeout.
+func (mr *MockIWebSocketClientMockRecorder) NotifyRequestTimeout() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NotifyRequestTimeout", reflect.TypeOf((*MockIWebSocketClient)(nil).NotifyRequestTimeout))
+}

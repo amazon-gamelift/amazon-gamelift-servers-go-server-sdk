@@ -112,6 +112,10 @@ func (manager *gameLiftManager) HandleRequest(request MessageGetter, response an
 	case <-expire:
 		manager.client.CancelRequest(request.GetMessage().RequestID)
 		manager.lg.Errorf("Response not received within time limit for request: %s", request.GetMessage().RequestID)
+		// Let the client track consecutive timeouts and trigger a transport reconnect after
+		// the threshold is crossed. The call is non-blocking: reconnect work happens on a
+		// background goroutine so this caller still returns ServiceCallFailed promptly.
+		manager.client.NotifyRequestTimeout()
 		return common.NewGameLiftError(common.ServiceCallFailed, "", "")
 	case resultData := <-respData:
 		if resultData.Error != nil {

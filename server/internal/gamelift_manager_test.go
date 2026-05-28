@@ -160,6 +160,10 @@ func TestGameliftManagerHandleRequest_AuthTokenPassed(t *testing.T) {
 		EXPECT().
 		CancelRequest(req.RequestID)
 
+	websocketClientMock.
+		EXPECT().
+		NotifyRequestTimeout()
+
 	err = gm.HandleRequest(req, &resp, timeDuration)
 	if err == nil {
 		t.Fatal(err)
@@ -309,6 +313,10 @@ func TestGameliftManagerHandleRequest_SigV4QueryParametersPassed(t *testing.T) {
 		EXPECT().
 		CancelRequest(req.RequestID)
 
+	websocketClientMock.
+		EXPECT().
+		NotifyRequestTimeout()
+
 	err = gm.HandleRequest(req, &resp, timeDuration)
 	if err == nil {
 		t.Fatal(err)
@@ -456,6 +464,10 @@ func TestGameliftManagerHandleRequest_AuthTokenAndSigV4QueryParametersPassed(t *
 		EXPECT().
 		CancelRequest(req.RequestID)
 
+	websocketClientMock.
+		EXPECT().
+		NotifyRequestTimeout()
+
 	err = gm.HandleRequest(req, &resp, timeDuration)
 	if err == nil {
 		t.Fatal(err)
@@ -577,6 +589,10 @@ func TestGameliftManagerHandleRequest_Timeout_ReturnError(t *testing.T) {
 	websocketClientMock.
 		EXPECT().
 		CancelRequest(req.RequestID)
+
+	websocketClientMock.
+		EXPECT().
+		NotifyRequestTimeout()
 
 	logger.
 		EXPECT().

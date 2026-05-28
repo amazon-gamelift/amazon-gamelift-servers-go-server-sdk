@@ -1,4 +1,4 @@
-# Go sever SDK for Amazon GameLift Servers
+# Go server SDK for Amazon GameLift Servers
 
 ## Documentation
 You can find the official Amazon GameLift Servers documentation [here](https://docs.aws.amazon.com/gamelift/).

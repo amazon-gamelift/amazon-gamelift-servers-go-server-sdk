@@ -1,0 +1,1 @@
+- Improved websocket reliability with automatic reconnection for unresponsive connections, preventing processes from being incorrectly marked unhealthy.
