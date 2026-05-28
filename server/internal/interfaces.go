@@ -23,6 +23,11 @@ type IWebSocketClient interface {
 	SendRequest(req MessageGetter, resp chan<- common.Outcome) error
 	AddHandler(action message.MessageAction, handler func([]byte))
 	CancelRequest(requestID string)
+	// NotifyRequestTimeout - notifies the client that a request timed out waiting for a response.
+	// Used to detect half-open WebSocket connections where writes succeed but responses never arrive.
+	// After common.RequestTimeoutReconnectThreshold consecutive timeouts without any intervening
+	// successful response, the underlying transport is reconnected.
+	NotifyRequestTimeout()
 }
 
 // MessageGetter - interface representing the data type that contains request.Request.
