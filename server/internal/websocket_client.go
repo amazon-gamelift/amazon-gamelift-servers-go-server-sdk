@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"sync"
+	"sync/atomic"
 
 	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/common"
 	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/message"
@@ -31,6 +32,15 @@ type websocketClient struct {
 	handleMtx     sync.RWMutex
 	responses     map[string]chan<- common.Outcome
 	asyncHandlers map[message.MessageAction]func([]byte)
+
+	// consecutiveTimeouts tracks consecutive HandleRequest timeouts since the last successful response.
+	// Reset to 0 on any successful response. When it reaches
+	// common.RequestTimeoutReconnectThreshold, a transport reconnect is triggered to recover
+	// from half-open WebSocket connections.
+	// Accessed atomically via sync/atomic primitives.
+	consecutiveTimeouts int32
+	// reconnectInFlight ensures only one reconnect is kicked off per streak of timeouts.
+	reconnectInFlight common.AtomicBool
 }
 
 // GetWebsocketClient - return an implementation of IWebSocketClient.
@@ -110,6 +120,39 @@ func (c *websocketClient) CancelRequest(requestID string) {
 	c.sendResponse(requestID, nil, nil)
 }
 
+// NotifyRequestTimeout - increments the consecutive-timeout counter. When the counter reaches
+// common.RequestTimeoutReconnectThreshold, an asynchronous Reconnect is initiated on the
+// underlying transport. This recovers from half-open WebSocket connections where requests
+// enqueue successfully but responses never arrive.
+//
+// The counter is reset to 0 by any successful response received through readHandler.
+// A single reconnect goroutine is in flight at a time to avoid flooding Reconnect() on
+// repeated timeouts after the threshold is crossed.
+func (c *websocketClient) NotifyRequestTimeout() {
+	n := atomic.AddInt32(&c.consecutiveTimeouts, 1)
+	if int(n) < common.RequestTimeoutReconnectThreshold {
+		return
+	}
+	// Kick off at most one reconnect per streak of timeouts. Once a reconnect is in flight,
+	// the Reconnect() call itself serializes via the transport's writeMtx, and subsequent
+	// timeouts stacking up on the dead socket simply bump the counter without doing work.
+	if !c.reconnectInFlight.CompareAndSwap(false, true) {
+		return
+	}
+	c.log.Warnf("Reached %d consecutive request timeouts — triggering transport reconnect", n)
+	go func() {
+		defer c.reconnectInFlight.Store(false)
+		if err := c.iTransport.Reconnect(); err != nil {
+			c.log.Errorf("Reconnect after consecutive request timeouts failed: %s", err)
+			return
+		}
+		// A successful reconnect resets the streak. Successful round-trips on the new
+		// connection will keep it at zero via readHandler; setting it here prevents a
+		// lingering stale counter value if no traffic follows immediately.
+		atomic.StoreInt32(&c.consecutiveTimeouts, 0)
+	}()
+}
+
 // Close closes underlying connections and releases their associated resources.
 // All Send calls after Close call will return an error.
 func (c *websocketClient) Close() error {
@@ -131,6 +174,10 @@ func (c *websocketClient) getHandlerByAction(action message.MessageAction) (func
 }
 
 func (c *websocketClient) readHandler(data []byte) {
+	// Any inbound frame is evidence of transport liveness — reset the consecutive-timeout
+	// counter so the next request-timeout streak starts from zero.
+	atomic.StoreInt32(&c.consecutiveTimeouts, 0)
+
 	// Try to find Action and RequestId in received data
 	var resp message.ResponseMessage
 	if err := json.Unmarshal(data, &resp); err != nil {

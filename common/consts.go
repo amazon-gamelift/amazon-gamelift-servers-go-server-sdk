@@ -29,7 +29,11 @@ const (
 	// ReconnectOnReadWriteFailureNumber Number of consecutive read/write failures before reconnect is called
 	ReconnectOnReadWriteFailureNumber int = 2
 	// MaxReadWriteRetry The max number of retries after consecutive read/write failures, including the reconnect described above
-	MaxReadWriteRetry            int = 5
+	MaxReadWriteRetry int = 5
+	// RequestTimeoutReconnectThreshold Number of consecutive HandleRequest timeouts before a reconnect is triggered.
+	// Detects half-open WebSocket connections that look healthy at the transport layer (no read/write errors)
+	// but where request/response round-trips silently fail. Mirrors ReconnectOnReadWriteFailureNumber.
+	RequestTimeoutReconnectThreshold int = 2
 	MaxStringLengthMatchmakingId     = 128
 	MaxStringLengthId            int = 256
 	MaxStringLengthArn           int = 256
@@ -53,7 +57,7 @@ const (
 	SdkLanguageKey              = "sdkLanguage"
 	PidKey                      = "pID"
 	SdkVersionKey               = "sdkVersion"
-	SdkVersion                  = "5.4.0"
+	SdkVersion                  = "5.4.1"
 	AuthTokenKey                = "Authorization"
 	ComputeIDKey                = "ComputeId"
 	FleetIDKey                  = "FleetId"
