@@ -89,6 +89,8 @@ const (
 	MetricConfigurationException
 	// MetricUnsupportedTypeException - Unsupported metric type.
 	MetricUnsupportedTypeException
+	// UnsupportedComputeTypeException - Operation not supported on this compute type.
+	UnsupportedComputeTypeException
 )
 
 type errorDescription struct {
@@ -253,6 +255,10 @@ var errorMessages = map[GameLiftErrorType]errorDescription{
 	MetricUnsupportedTypeException: {
 		name:    "Metric unsupported type exception.",
 		message: "Unsupported metric type.",
+	},
+	UnsupportedComputeTypeException: {
+		name:    "Unsupported compute type exception.",
+		message: "This operation is not supported on the current compute type.",
 	},
 }
 

@@ -57,7 +57,7 @@ const (
 	SdkLanguageKey              = "sdkLanguage"
 	PidKey                      = "pID"
 	SdkVersionKey               = "sdkVersion"
-	SdkVersion                  = "5.4.1"
+	SdkVersion                  = "5.5.0"
 	AuthTokenKey                = "Authorization"
 	ComputeIDKey                = "ComputeId"
 	FleetIDKey                  = "FleetId"
@@ -95,6 +95,7 @@ const (
 	EnvironmentKeySessionToken   string = "GAMELIFT_SESSION_TOKEN"
 	EnvironmentKeySDKToolName    string = "GAMELIFT_SDK_TOOL_NAME"
 	EnvironmentKeySDKToolVersion string = "GAMELIFT_SDK_TOOL_VERSION"
+	EnvironmentKeyDiscoveryEndpoint string = "GAMELIFT_CONTAINER_DISCOVERY_SERVER_ENDPOINT"
 
 	// Metrics environment variables
 	EnvironmentKeyStatsdHost        string = "GAMELIFT_STATSD_HOST"
