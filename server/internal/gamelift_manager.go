@@ -14,6 +14,7 @@ import (
 
 	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/common"
 	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/message"
+	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/result"
 	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/security"
 	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/transport"
 	"github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/log"
@@ -28,6 +29,7 @@ type IGameLiftManager interface {
 	HandleRequest(request MessageGetter, response any, timeout time.Duration) error
 	FetchCredentials(computeType string) (*security.AwsCredentials, error)
 	FetchMetadata(computeType string) (security.ComputeMetadata, error)
+	FetchContainersNetworkInfo() (result.ListContainersNetworkInfoResult, error)
 	GetLogger() log.ILogger
 }
 
@@ -210,4 +212,12 @@ func (manager *gameLiftManager) FetchMetadata(computeType string) (security.Comp
 		return nil, err
 	}
 	return containerTaskMetadata, nil
+}
+
+func (manager *gameLiftManager) FetchContainersNetworkInfo() (result.ListContainersNetworkInfoResult, error) {
+	fetcher, err := security.NewContainerNetworkInfoFetcher(manager.httpClient)
+	if err != nil {
+		return result.ListContainersNetworkInfoResult{}, err
+	}
+	return fetcher.FetchContainersNetworkInfo()
 }
