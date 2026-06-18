@@ -407,6 +407,24 @@ func GetComputeCertificate() (result.GetComputeCertificateResult, error) {
 	return srv.getComputeCertificate()
 }
 
+// ListContainersNetworkInfo - retrieves network information for all containers running on the same instance.
+// This API is only supported on container fleets. When called from any other compute type, it returns an
+// UnsupportedComputeTypeException error.
+// It calls a local discovery server to obtain container names, IPs, IDs, and group types.
+//
+// Returns result.ListContainersNetworkInfoResult containing a list of ContainerNetworkInfo entries.
+//
+//	networkInfo, err := server.ListContainersNetworkInfo()
+//	if err != nil {
+//	    // handle error
+//	}
+//	for _, container := range networkInfo.ContainersNetworkInfo {
+//	    fmt.Printf("Container %s at %s\n", container.ContainerName, container.IPAddress)
+//	}
+func ListContainersNetworkInfo() (result.ListContainersNetworkInfoResult, error) {
+	return srv.listContainersNetworkInfo()
+}
+
 // GetFleetRoleCredentials - retrieves the service role credentials you created to extend permissions to
 // your other AWS services to Amazon GameLift Servers. These credentials allow your game server to
 // use your AWS resources. For more information, see

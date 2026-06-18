@@ -6,6 +6,7 @@ package mock
 
 import (
 	internal "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal"
+	result "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/model/result"
 	security "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/internal/security"
 	log "github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5/server/log"
 	reflect "reflect"
@@ -93,6 +94,21 @@ func (m *MockIGameLiftManager) FetchMetadata(arg0 string) (security.ComputeMetad
 func (mr *MockIGameLiftManagerMockRecorder) FetchMetadata(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchMetadata", reflect.TypeOf((*MockIGameLiftManager)(nil).FetchMetadata), arg0)
+}
+
+// FetchContainersNetworkInfo mocks base method.
+func (m *MockIGameLiftManager) FetchContainersNetworkInfo() (result.ListContainersNetworkInfoResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FetchContainersNetworkInfo")
+	ret0, _ := ret[0].(result.ListContainersNetworkInfoResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FetchContainersNetworkInfo indicates an expected call of FetchContainersNetworkInfo.
+func (mr *MockIGameLiftManagerMockRecorder) FetchContainersNetworkInfo() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchContainersNetworkInfo", reflect.TypeOf((*MockIGameLiftManager)(nil).FetchContainersNetworkInfo))
 }
 
 // GetLogger mocks base method.

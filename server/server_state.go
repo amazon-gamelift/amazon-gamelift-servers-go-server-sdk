@@ -49,6 +49,7 @@ type iGameLiftServerState interface {
 	stopMatchBackfill(*request.StopMatchBackfillRequest) error
 	getComputeCertificate() (result.GetComputeCertificateResult, error)
 	getFleetRoleCredentials(*request.GetFleetRoleCredentialsRequest) (result.GetFleetRoleCredentialsResult, error)
+	listContainersNetworkInfo() (result.ListContainersNetworkInfoResult, error)
 	setMetricsFactory(metrics.IFactory)
 	destroy() error
 }
@@ -372,6 +373,11 @@ func (state *gameLiftServerState) getComputeCertificate() (result.GetComputeCert
 	}
 	err := state.wsGameLift.HandleRequest(request.NewGetComputeCertificate(), &res, state.serviceCallTimeout)
 	return res, err
+}
+
+func (state *gameLiftServerState) listContainersNetworkInfo() (result.ListContainersNetworkInfoResult, error) {
+	lg.Debugf("Calling ListContainersNetworkInfo")
+	return state.wsGameLift.FetchContainersNetworkInfo()
 }
 
 func (state *gameLiftServerState) getRoleCredentialsFromCache(roleArn string) (result.GetFleetRoleCredentialsResult, bool) {
