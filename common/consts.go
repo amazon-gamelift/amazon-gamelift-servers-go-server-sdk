@@ -57,7 +57,7 @@ const (
 	SdkLanguageKey              = "sdkLanguage"
 	PidKey                      = "pID"
 	SdkVersionKey               = "sdkVersion"
-	SdkVersion                  = "5.5.0"
+	SdkVersion                  = "5.6.0"
 	AuthTokenKey                = "Authorization"
 	ComputeIDKey                = "ComputeId"
 	FleetIDKey                  = "FleetId"

@@ -1,6 +1,6 @@
 module github.com/amazon-gamelift/amazon-gamelift-servers-go-server-sdk/v5
 
-go 1.18
+go 1.25.0
 
 require (
 	github.com/DataDog/datadog-go/v5 v5.6.0
@@ -13,6 +13,6 @@ require (
 
 require (
 	github.com/Microsoft/go-winio v0.5.0 // indirect
-	golang.org/x/net v0.33.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/net v0.55.0 // indirect
+	golang.org/x/sys v0.45.0 // indirect
 )
