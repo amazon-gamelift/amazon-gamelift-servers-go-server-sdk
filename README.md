@@ -4,7 +4,7 @@
 You can find the official Amazon GameLift Servers documentation [here](https://docs.aws.amazon.com/gamelift/).
 
 ## Minimum requirements:
- * [Go 1.18 or newer](https://golang.org/dl/)
+ * [Go 1.25 or newer](https://golang.org/dl/)
  * [Make](https://www.gnu.org/software/make/) utility and [Docker](https://www.docker.com/) to run tests and linter
 
 ## Installation (Local Beta)

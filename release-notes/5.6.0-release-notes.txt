@@ -1,0 +1,2 @@
+- Updates the minimum required Go version to 1.25.
+- Updates transitive dependencies to newer versions.
