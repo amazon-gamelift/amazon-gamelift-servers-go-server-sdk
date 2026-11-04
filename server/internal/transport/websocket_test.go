@@ -126,7 +126,7 @@ func TestWebsocketWriteRefreshConnection(t *testing.T) {
 		defer connectionsRefreshedWaitGroup.Done()
 		err := tr.Connect(addr)
 		if err != nil {
-			t.Fatalf("websocket connect: %v", err)
+			t.Errorf("websocket connect: %v", err)
 		}
 	}
 

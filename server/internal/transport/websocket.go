@@ -25,6 +25,11 @@ const websocketConnectFailureMessage string = "Connection to the game server pro
 	"please verify that values of ServerParameters in InitSDK() are correct. For example, process ID needs to be " +
 	"unique between executions, and the authentication token needs to be correct and unexpired."
 
+type connectionAttempt struct {
+	done chan struct{}
+	err  error
+}
+
 // websocketTransport - implement ITransport interface for websocket connection.
 type websocketTransport struct {
 	log    log.ILogger
@@ -36,16 +41,18 @@ type websocketTransport struct {
 	reconnecting         common.AtomicBool
 	preventAutoReconnect common.AtomicBool
 	writeMtx             sync.Mutex
+	reconnectMtx         sync.Mutex
+	connectionAttempt    *connectionAttempt
 	connectURL           url.URL
 
 	readHandlerMu sync.RWMutex
 	readHandler   ReadHandler
 
-	readRetries  int
-	writeRetries int
+	readRetries int
 
 	connectionId int
 
+	connectRetryInterval       time.Duration
 	disconnectWebsocketTimeout time.Duration
 }
 
@@ -58,8 +65,9 @@ func isAbnormalCloseError(err error) bool {
 // Websocket creates a new instance of the ITransport implementation.
 func Websocket(logger log.ILogger, dialer Dialer) ITransport {
 	return &websocketTransport{
-		log:    logger,
-		dialer: dialer,
+		log:                  logger,
+		dialer:               dialer,
+		connectRetryInterval: common.ConnectRetryInterval,
 		disconnectWebsocketTimeout: common.GetEnvDurationOrDefault(
 			common.DisconnectWebsocketTimeout,
 			common.DisconnectWebsocketTimeoutDefault,
@@ -68,13 +76,13 @@ func Websocket(logger log.ILogger, dialer Dialer) ITransport {
 	}
 }
 
-func (tr *websocketTransport) handleNetworkInterrupt(e error) error {
+func (tr *websocketTransport) handleNetworkInterrupt(e error, connectionId int) error {
 	if tr.preventAutoReconnect.Load() {
 		tr.log.Debugf("Preventing auto-reconnect attempt due to explicit previous call to PreventAutoReconnect()")
 		return nil
 	}
 	tr.log.Warnf("Detected network interruption %s! Reconnecting...", e)
-	if reconnectError := tr.Reconnect(); reconnectError != nil {
+	if reconnectError := tr.connect(nil, connectionId, true); reconnectError != nil {
 		tr.log.Errorf("Reconnect failed: %s", reconnectError)
 		return reconnectError
 	}
@@ -82,19 +90,64 @@ func (tr *websocketTransport) handleNetworkInterrupt(e error) error {
 }
 
 func (tr *websocketTransport) Connect(u *url.URL) error {
+	return tr.connect(u, 0, false)
+}
+
+func (tr *websocketTransport) connect(u *url.URL, failedConnectionId int, reconnect bool) error {
+	for {
+		tr.reconnectMtx.Lock()
+		if failedConnectionId != 0 && failedConnectionId != tr.connectionId {
+			tr.reconnectMtx.Unlock()
+			return nil
+		}
+		if attempt := tr.connectionAttempt; attempt != nil {
+			tr.reconnectMtx.Unlock()
+			<-attempt.done
+			if reconnect {
+				return attempt.err
+			}
+			continue
+		}
+		if reconnect {
+			target := tr.connectURL
+			u = &target
+		}
+		attempt := &connectionAttempt{done: make(chan struct{})}
+		tr.connectionAttempt = attempt
+		tr.reconnecting.Store(true)
+		tr.reconnectMtx.Unlock()
+
+		err := tr.connectOnce(u, attempt)
+		tr.reconnectMtx.Lock()
+		tr.finishConnectionAttemptLocked(attempt, err)
+		tr.reconnectMtx.Unlock()
+		return err
+	}
+}
+
+func (tr *websocketTransport) finishConnectionAttemptLocked(attempt *connectionAttempt, err error) {
+	if tr.connectionAttempt == attempt {
+		attempt.err = err
+		tr.connectionAttempt = nil
+		tr.reconnecting.Store(false)
+		close(attempt.done)
+	}
+}
+
+func (tr *websocketTransport) connectOnce(u *url.URL, attempt *connectionAttempt) error {
 	tr.writeMtx.Lock()
 	defer tr.writeMtx.Unlock()
-	// always set reconnecting to true so other goroutines can check whether a new connection is being set up
-	tr.reconnecting.Store(true)
+	tr.reconnectMtx.Lock()
 	oldConn := tr.conn
 	oldConnectionId := tr.connectionId
 	oldCancelConnectionFn := tr.cancelConnectionFn
+	tr.reconnectMtx.Unlock()
 
 	tr.log.Debugf("Establishing websocket connection")
 
 	ctx := context.Background()
 	// Exponential doubles the interval between retries
-	backOff := retry.NewExponential(common.ConnectRetryInterval)
+	backOff := retry.NewExponential(tr.connectRetryInterval)
 	// We are adding two because we skip the first two retries until the initial duration is 4
 	backOff = retry.WithMaxRetries(common.ConnectMaxRetries+2, backOff)
 	backOff = retry.WithCappedDuration(common.MaxReconnectBackoffDuration, backOff)
@@ -102,6 +155,8 @@ func (tr *websocketTransport) Connect(u *url.URL) error {
 	backOff.Next()
 
 	var connectionLifetimeContext context.Context
+	var nextConn Conn
+	var nextCancelConnectionFn context.CancelFunc
 	if err := retry.Do(ctx, backOff, func(ctx context.Context) error {
 		//nolint:bodyclose // The response body may not contain the entire response and does not need to be closed by the application
 		conn, resp, dialErr := tr.dialer.Dial(u.String(), http.Header{"User-Agent": []string{"gamelift-go-sdk/1.0"}})
@@ -120,25 +175,27 @@ func (tr *websocketTransport) Connect(u *url.URL) error {
 				),
 			)
 		}
-		tr.conn = conn
-		connectionLifetimeContext, tr.cancelConnectionFn = context.WithCancel(context.Background())
+		nextConn = conn
+		connectionLifetimeContext, nextCancelConnectionFn = context.WithCancel(context.Background())
 		return nil
 	}); err != nil {
 		return err
 	}
 
-	tr.setCloseHandler()
+	connectionId := oldConnectionId + 1
+	tr.setCloseHandler(nextConn, connectionId)
+	tr.reconnectMtx.Lock()
+	tr.conn = nextConn
+	tr.connectionId = connectionId
+	tr.cancelConnectionFn = nextCancelConnectionFn
 	tr.connectURL = *u
 
-	// Marking old connection as redundant must occur before we turn off the reconnection flag
-	// Otherwise we have a race condition if the old connection receives an error or normal closure
-	// while we have a new, main connection
+	// NOTE: Publish the result before starting the new reader or draining the old socket.
 	tr.markConnectionAsRedundant(oldCancelConnectionFn, oldConnectionId)
 	tr.isConnected.Store(true)
-	tr.reconnecting.Store(false)
-
-	tr.connectionId++
-	go tr.readProcess(tr.conn, connectionLifetimeContext, tr.connectionId)
+	tr.finishConnectionAttemptLocked(attempt, nil)
+	tr.reconnectMtx.Unlock()
+	go tr.readProcess(nextConn, connectionLifetimeContext, connectionId)
 
 	// Close the previous connection
 	if err := tr.closeConnectionSafely(oldConn, oldConnectionId); err != nil {
@@ -149,23 +206,20 @@ func (tr *websocketTransport) Connect(u *url.URL) error {
 
 // Reconnect - blocks until ongoing reconnect succeeds or initiates and finishes a new reconnect.
 func (tr *websocketTransport) Reconnect() error {
-	if tr.reconnecting.Swap(true) {
-		tr.writeMtx.Lock() // Wait for reconnect to finish
-		defer tr.writeMtx.Unlock()
-		return nil
-	}
-	err := tr.Connect(&tr.connectURL)
-	tr.reconnecting.Store(false)
-	return err
+	return tr.connect(nil, 0, true)
 }
 
-func (tr *websocketTransport) setCloseHandler() {
+func (tr *websocketTransport) setCloseHandler(conn Conn, connectionId int) {
 	// wraps a default handler that correctly implements the protocol specification.
-	currentHandler := tr.conn.CloseHandler()
-	tr.conn.SetCloseHandler(func(code int, text string) error {
+	currentHandler := conn.CloseHandler()
+	conn.SetCloseHandler(func(code int, text string) error {
 		tr.log.Debugf("Socket disconnected. Code is %d. Reason is %s", code, text)
-		err := tr.Close()
-		if err != nil {
+		tr.reconnectMtx.Lock()
+		if connectionId == tr.connectionId {
+			tr.isConnected.Store(false)
+		}
+		tr.reconnectMtx.Unlock()
+		if err := tr.closeConnection(conn, connectionId); err != nil {
 			return err
 		}
 		return currentHandler(code, text)
@@ -198,7 +252,7 @@ func (tr *websocketTransport) readProcess(connection Conn, context context.Conte
 							tr.log.Errorf("read goroutine %d: Websocket readProcess failed: %v", connectionId, err)
 						}
 						// RefreshConnection can lead to disconnection.
-						if err = tr.handleNetworkInterrupt(err); err != nil {
+						if err = tr.handleNetworkInterrupt(err, connectionId); err != nil {
 							tr.log.Errorf("read goroutine %d: Failed to handle network interrupt with error %v", connectionId, err)
 						}
 					} else {
@@ -269,12 +323,14 @@ func (tr *websocketTransport) closeConnection(conn Conn, connectionId int) error
 }
 
 func (tr *websocketTransport) Close() error {
-	// Set isConnected to false and close connection only if previously isConnected value was true.
-	if tr.isConnected.CompareAndSwap(true, false) {
-		return tr.closeConnection(tr.conn, tr.connectionId)
+	tr.reconnectMtx.Lock()
+	if !tr.isConnected.CompareAndSwap(true, false) {
+		tr.reconnectMtx.Unlock()
+		return nil
 	}
-
-	return nil
+	conn, connectionId := tr.conn, tr.connectionId
+	tr.reconnectMtx.Unlock()
+	return tr.closeConnection(conn, connectionId)
 }
 
 func (tr *websocketTransport) PreventAutoReconnect() {
@@ -283,29 +339,28 @@ func (tr *websocketTransport) PreventAutoReconnect() {
 
 func (tr *websocketTransport) Write(data []byte) error {
 	tr.writeMtx.Lock()
+	defer tr.writeMtx.Unlock()
 	if !tr.isConnected.Load() {
-		tr.writeMtx.Unlock()
 		return common.NewGameLiftError(common.GameLiftServerNotInitialized, "", "")
 	}
-	tr.writeRetries = 0
-	var err error
-	for ; tr.writeRetries < common.MaxReadWriteRetry; tr.writeRetries++ {
-		if err = tr.conn.WriteMessage(websocket.TextMessage, data); err != nil && isAbnormalCloseError(err) {
-			if tr.writeRetries == common.ReconnectOnReadWriteFailureNumber {
-				tr.writeMtx.Unlock()
-				if err = tr.handleNetworkInterrupt(err); err == nil {
-					tr.writeRetries--
-				}
-				tr.writeMtx.Lock()
-			} else {
-				tr.log.Debugf("Failed to write message: %v, retrying...", err)
-				time.Sleep(time.Second)
-			}
-		} else {
-			tr.writeMtx.Unlock()
+	var lastWriteErr error
+	for writeRetries := 0; writeRetries < common.MaxReadWriteRetry; writeRetries++ {
+		tr.reconnectMtx.Lock()
+		conn, connectionId := tr.conn, tr.connectionId
+		tr.reconnectMtx.Unlock()
+		err := conn.WriteMessage(websocket.TextMessage, data)
+		if err == nil || !isAbnormalCloseError(err) {
 			return err
 		}
+		lastWriteErr = err
+		if writeRetries == common.ReconnectOnReadWriteFailureNumber {
+			tr.writeMtx.Unlock()
+			tr.handleNetworkInterrupt(err, connectionId)
+			tr.writeMtx.Lock()
+		} else {
+			tr.log.Debugf("Failed to write message: %v, retrying...", err)
+			time.Sleep(time.Second)
+		}
 	}
-	tr.writeMtx.Unlock()
-	return common.NewGameLiftError(common.WebsocketSendMessageFailure, "Failed write data", err.Error())
+	return common.NewGameLiftError(common.WebsocketSendMessageFailure, "Failed write data", lastWriteErr.Error())
 }
